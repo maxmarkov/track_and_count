@@ -17,26 +17,6 @@ from utils.general import (
     xyxy2xywh, plot_one_box, strip_optimizer, set_logging)
 from utils.torch_utils import select_device, load_classifier, time_synchronized
 
-#def save_results(im0, save_path, vid_path, vid_writer, vid_cap, dataset):
-#    '''
-#    Save results into a new video file with bboxes
-#    '''
-#    if dataset.mode == 'images':
-#       cv2.imwrite(save_path, im0)
-#    else:
-#       if vid_path != save_path:  # new video
-#           vid_path = save_path
-#           if isinstance(vid_writer, cv2.VideoWriter):
-#               vid_writer.release()  # release previous video writer
-#
-#           fourcc = 'mp4v'  # output video codec
-#           fps = vid_cap.get(cv2.CAP_PROP_FPS)
-#           w = int(vid_cap.get(cv2.CAP_PROP_FRAME_WIDTH))
-#           h = int(vid_cap.get(cv2.CAP_PROP_FRAME_HEIGHT))
-#           vid_writer = cv2.VideoWriter(save_path, cv2.VideoWriter_fourcc(*fourcc), fps, (w, h))
-#       vid_writer.write(im0)
-
-
 def plot_detections(det, im0, img, s, names, colors, save_txt, save_img, view_img):
     '''
     Add bounding box around detection
