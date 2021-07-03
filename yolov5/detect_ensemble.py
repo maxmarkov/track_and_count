@@ -10,7 +10,7 @@ import torch
 import torch.backends.cudnn as cudnn
 from numpy import random
 
-from models.experimental import attempt_load
+from models.experimental import attempt_load, Ensemble
 from utils.datasets import LoadStreams, LoadImages
 from utils.general import (
     check_img_size, non_max_suppression, apply_classifier, scale_coords,
@@ -58,11 +58,18 @@ def detect(save_img=False):
 
     # Load the ensemble of models
     models = attempt_load(weights, map_location=device)  # load FP32 model
-    if half:
-        models.half()
+
+    # Workaround for a single model: make a list from the single 'models.yolo.Model' object
+    # One model:           <class 'models.yolo.Model'>  -> list[Models]
+    # Two and more models: <class 'models.experimental.Ensemble'>
+    if not isinstance(models, Ensemble):
+        models = [models]
 
     names = []; colors = []
     for model in models:
+       if half:
+          model.half()  # to FP16
+
        # Get names and colors
        names.append(model.module.names if hasattr(model, 'module') else model.names)
        colors.append([[random.randint(0, 255) for _ in range(3)] for _ in range(len(model.names))])
@@ -91,7 +98,6 @@ def detect(save_img=False):
             img = img.unsqueeze(0)
 
         # Inference
-        t1 = time_synchronized()
         for j, model in enumerate(models):
             t1 = time_synchronized()
             pred = model(img, augment=opt.augment)[0]
@@ -116,13 +122,13 @@ def detect(save_img=False):
                 print('%sDone. (%.3fs)' % (s, t2 - t1))
 
                 # Stream results
-                if view_img:
+                if view_img and j == len(models)-1:
                     cv2.imshow(p, im0)
                     if cv2.waitKey(1) == ord('q'):  # q to quit
                         raise StopIteration
 
                 # Save results (image with detections)
-                if save_img:
+                if save_img and j == len(models)-1:
                     if dataset.mode == 'images':
                         cv2.imwrite(save_path, im0)
                     else:
